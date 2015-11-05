@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 
+import os
+if (os.geteuid() != 0):
+	exit("Must run as root!")
 import time
 import RPi.GPIO as GPIO
 import Adafruit_CharLCD as LCD
 import AudioDelay
+
+import JackdInit
+JackdInit.JackdInit()
 
 GPIO_ENC_0 = 9
 GPIO_ENC_1 = 10
