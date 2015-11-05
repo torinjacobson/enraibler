@@ -6,10 +6,23 @@ if (os.geteuid() != 0):
 import time
 import RPi.GPIO as GPIO
 import Adafruit_CharLCD as LCD
+
 import AudioDelay
+audiodelay = AudioDelay.AudioDelay()
 
 import JackdInit
 JackdInit.JackdInit()
+
+# Code for gracefully killing script
+import signal
+import sys
+def signal_handler(signal, frame):
+	print("Ctrl+C")
+	audiodelay.kill()
+	GPIO.cleanup()
+	sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
+
 
 GPIO_ENC_0 = 9
 GPIO_ENC_1 = 10
@@ -47,7 +60,6 @@ def encoderEventHandler(pin):
 			delay = delay - 1
 
 def main():
-	audiodelay = AudioDelay.AudioDelay()
 	# Use chip's GPIO numbering scheme
 	GPIO.setmode(GPIO.BCM)
 
@@ -74,7 +86,5 @@ def main():
 			delay_prev = delay
 		time.sleep(0.05)
 
-	GPIO.cleanup()
-	audiodelay.kill()
 
 main()
