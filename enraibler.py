@@ -52,7 +52,7 @@ def main():
 
 	# Add event handlers
 	GPIO.add_event_detect(GPIO_BUTTON_0, GPIO.FALLING, callback=buttonEventHandler, bouncetime=200)
-	GPIO.add_event_detect(GPIO_ENC_0, GPIO.BOTH, callback=encoderEventHandler, bouncetime=75)
+	GPIO.add_event_detect(GPIO_ENC_0, GPIO.BOTH, callback=encoderEventHandler, bouncetime=25)
 
 	global update
 	global delay
@@ -60,15 +60,13 @@ def main():
 	delay_prev = -1
 	while True:
 		if (delay != delay_prev):
-			# let's print the delay on the LCD for now.
-			lcd.clear()
-			lcd.message("delay = " + str(float(delay)/10))
-			delay_prev = delay
-	
 			update = False
-			audiodelay.begin_delay(delay)
-		time.sleep(0.01)
-		
+			lcd.clear()
+			# delay audio in 100ms increments.
+			lcd.message(str(float(delay)/10))
+			audiodelay.begin_delay_ms(delay * 100)
+			delay_prev = delay
+		time.sleep(0.05)
 
 	GPIO.cleanup()
 	audiodelay.kill()

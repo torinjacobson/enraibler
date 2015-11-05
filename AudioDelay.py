@@ -33,8 +33,8 @@ class AudioDelay:
 		self.audiosrc.link(self.audioqueue)
 		self.audioqueue.link(self.sink)
 
-	def begin_delay(self, delay_ms):
-		delay_ns = long( float(delay_ms) * 100000000 )
+	def begin_delay_ms(self, delay_ms):
+		delay_ns = long( float(delay_ms) * 1000000 )
 		self.delay_pipeline.set_state(gst.STATE_PAUSED)
 		self.audioqueue.set_property("min-threshold-time", delay_ns)
 		self.delay_pipeline.set_state(gst.STATE_PLAYING)
