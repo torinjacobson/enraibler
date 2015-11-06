@@ -10,7 +10,7 @@ import time
 
 
 class JackdInit:
-	jackd_command = '/usr/bin/jackd -R -P10 -T -dalsa -r48000 -S -p256 -n2 -D -Chw:sndrpiproto,0 -Phw:sndrpiproto,0'
+	jackd_command = '/usr/local/bin/jackd -R -P10 -T -dalsa -r48000 -S -p256 -n2 -D -Chw:sndrpiproto,0 -Phw:sndrpiproto,0'
 
 	def __init__(self):
 		# Start jackd if it's not already running
