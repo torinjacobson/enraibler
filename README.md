@@ -17,4 +17,4 @@ cd jack2
 ./waf install
 ```
 
-You can still install the normal jackd package to satisfy dependencies. If you run jackd from the command line, it will take precedence because it is in /usr/local/bin. Just make sure to run /usr/local/bin/jackd in startup scripts and other places where you need to provide the full path.
+> You can still install the normal jackd package to satisfy dependencies. If you run jackd from the command line, it will take precedence because it is in /usr/local/bin. Just make sure to run /usr/local/bin/jackd in startup scripts and other places where you need to provide the full path.
