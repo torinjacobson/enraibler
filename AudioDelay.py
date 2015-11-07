@@ -22,22 +22,27 @@ class AudioDelay:
 		self.audioqueue.set_property("max-size-buffers", 0)
 		self.audioqueue.set_property("max-size-bytes", 0)
 		self.audioqueue.set_property("leaky", "no")
-		
 		self.delay_pipeline.add(self.audioqueue)
+		
+		## Volume
+		self.volume = gst.element_factory_make("volume", "volume")
+		self.delay_pipeline.add(self.volume)
 
 		## Audio Output
 		self.sink = gst.element_factory_make("autoaudiosink", "sink")
 		self.delay_pipeline.add(self.sink)
 
 		## Link the elements
-		self.audiosrc.link(self.audioqueue)
-		self.audioqueue.link(self.sink)
-
+		gst.element_link_many(self.audiosrc, self.audioqueue, self.volume, self.sink)
+		
 	def begin_delay_ms(self, delay_ms):
 		delay_ns = long( float(delay_ms) * 1000000 )
-		self.delay_pipeline.set_state(gst.STATE_PAUSED)
 		self.audioqueue.set_property("min-threshold-time", delay_ns)
+		self.delay_pipeline.set_state(gst.STATE_PAUSED)
 		self.delay_pipeline.set_state(gst.STATE_PLAYING)
 
 	def kill(self):
 		self.delay_pipeline.set_state(gst.STATE_NULL)
+
+	def setvolume(self, volume):
+		self.volume.set_property('volume', volume)
