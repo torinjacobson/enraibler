@@ -18,11 +18,12 @@ import sys
 def signal_handler(signal, frame):
     print("Handling SIGINT...")
     global audiodelay
+    global lcd
     audiodelay.kill()
+    lcd.cleanup()
     GPIO.cleanup()
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
-
 
 GPIO_ENC_A = 9
 GPIO_ENC_B = 10
@@ -55,7 +56,36 @@ def get_delay_ms():
     # we see 4 transitions per detent, so divide by 4.
     global delay
     return round(delay / 4) * 100
-    
+   
+
+LCD_STATE_SOLID = 0
+LCD_STATE_FLASHING = 1
+lcd_state = LCD_STATE_SOLID
+brightness = 75
+countup = False
+def lcd_state_process():
+    BRIGHTNESS_INC = 10
+    global brightness
+    global countup
+    global lcd
+    if (lcd_state == LCD_STATE_FLASHING):
+        if (countup):
+            brightness = brightness + BRIGHTNESS_INC
+        else:
+            brightness = brightness - BRIGHTNESS_INC
+
+        if (brightness >= 90):
+            countup = False
+        elif (brightness <= 50):
+            countup = True
+        
+        lcd.set_brightness(brightness%100)
+    else:
+        brightness = 75
+        countup = False
+        lcd.set_brightness(brightness)
+
+
 def main():
     JackdInit.JackdInit()
     global audiodelay
@@ -75,8 +105,13 @@ def main():
     GPIO.add_event_detect(GPIO_ENC_A, GPIO.BOTH, callback=encoderEventHandler)
     GPIO.add_event_detect(GPIO_ENC_B, GPIO.BOTH, callback=encoderEventHandler)
 
+
+
     global lcd
-    lcd.set_brightness(50)
+    global lcd_state
+    lcd.fade_backlight(0, 80, 500)
+    lcd.fade_backlight(100, 75, 200)
+    brightness = 0
     delay_prev = -1
     while True:
         if (GPIO.input(GPIO_BUTTON_0)):
@@ -90,11 +125,13 @@ def main():
                 audiodelay.begin_delay_ms(delay_cur)
                 delay_prev = delay_cur
             lcd.printline("Delay: " + str(delay_cur / 1000) + "s")
+            #lcd_state = LCD_STATE_SOLID
         else:
             # Button is being pressed. Go into bypass mode.
             lcd.printline("BYPASS")
             audiodelay.setvolume(0)
             audio_no_delay.setvolume(1)
-
+            #lcd_state = LCD_STATE_FLASHING
+        #lcd_state_process()
         time.sleep(0.05)
 main()
