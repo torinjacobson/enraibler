@@ -16,7 +16,7 @@ class JackdInit:
 		# Start jackd if it's not already running
 		try:
 			pid = int(subprocess.check_output("pgrep jackd", shell=True))
-		except (ValueError):
+		except (ValueError, subprocess.CalledProcessError):
 			pid = 0
 
 		if (pid):
