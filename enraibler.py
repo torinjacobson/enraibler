@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 
-import os
-if (os.geteuid() != 0):
-    exit("Must run as root!")
-import time
-import RPi.GPIO as GPIO
-import Adafruit_CharLCD as LCD
-
-import JackdInit
-import AudioDelay
 import LcdWrapper
 lcd = LcdWrapper.LcdWrapper()
+lcd.printline("Init enraibler...")
+
+import time
+import RPi.GPIO as GPIO
+import JackdInit
+import AudioDelay
 
 # Code for gracefully killing script
 import signal
@@ -18,11 +15,12 @@ import sys
 def signal_handler(signal, frame):
     print("Handling SIGINT...")
     global audiodelay
+    global lcd
     audiodelay.kill()
+    lcd.cleanup()
     GPIO.cleanup()
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
-
 
 GPIO_ENC_A = 9
 GPIO_ENC_B = 10
@@ -55,7 +53,7 @@ def get_delay_ms():
     # we see 4 transitions per detent, so divide by 4.
     global delay
     return round(delay / 4) * 100
-    
+
 def main():
     JackdInit.JackdInit()
     global audiodelay
@@ -76,8 +74,10 @@ def main():
     GPIO.add_event_detect(GPIO_ENC_B, GPIO.BOTH, callback=encoderEventHandler)
 
     global lcd
-    lcd.set_brightness(50)
+    global lcd_state
     delay_prev = -1
+    button_0_prev = False
+    lcd.set_backlight_solid(60, 500)
     while True:
         if (GPIO.input(GPIO_BUTTON_0)):
             # Button is released. Go into enraible mode.
@@ -90,11 +90,20 @@ def main():
                 audiodelay.begin_delay_ms(delay_cur)
                 delay_prev = delay_cur
             lcd.printline("Delay: " + str(delay_cur / 1000) + "s")
+
+            if (not button_0_prev):
+                lcd.set_backlight_solid(60, 500)
+                button_0_prev = True
+
         else:
             # Button is being pressed. Go into bypass mode.
             lcd.printline("BYPASS")
             audiodelay.setvolume(0)
             audio_no_delay.setvolume(1)
+
+            if (button_0_prev):
+                lcd.set_backlight_flashing(25, 75, 500)
+                button_0_prev = False
 
         time.sleep(0.05)
 main()
